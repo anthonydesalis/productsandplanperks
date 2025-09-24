@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verizon Digital Quests</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        /* --- General Styling --- */
+        :root {
+            --verizon-red: #CD040B;
+            --dark-gray: #333;
+            --medium-gray: #757575;
+            --light-gray: #f4f4f4;
+            --green-correct: #28a745;
+            --red-incorrect: #dc3545;
+            --blue-accent: #007bff;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            background-color: var(--light-gray);
+            color: var(--dark-gray);
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        /* --- Section Styling --- */
+        .section {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem;
+            box-sizing: border-box;
+            width: 100%;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* --- Launchpad Section --- */
+        #launchpad-section {
+            background-color: var(--dark-gray);
+            color: var(--white);
+        }
+        .launchpad-container {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .quiz-choice-card {
+            background-color: var(--white);
+            color: var(--dark-gray);
+            padding: 2rem;
+            border-radius: 15px;
+            width: 300px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .quiz-choice-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+        .quiz-choice-card .icon { font-size: 3rem; margin-bottom: 1rem; }
+        .quiz-choice-card h3 { margin: 0.5rem 0; font-size: 1.5rem; }
+        .icon.cloud { color: var(--blue-accent); }
+        .icon.family { color: var(--green-correct); }
+
+        /* --- User Info Section --- */
+        #user-info-section {
+            background-color: var(--white);
+        }
+        .user-info-form {
+            background-color: var(--light-gray);
+            padding: 2.5rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 0.8rem;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        /* --- Quest Section (Reused styles) --- */
+        #quest-section { background-color: var(--white); }
+        #progress-bar { width: 100%; max-width: 600px; font-weight: bold; color: var(--medium-gray); margin-bottom: 2rem; text-align: right; padding-right: 10px; }
+        .quest-card { background-color: var(--light-gray); border-radius: 15px; padding: 2rem; width: 100%; max-width: 600px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); }
+        .quest-icon { font-size: 3rem; margin-bottom: 1rem; }
+        .quest-title { font-size: 1.5rem; font-weight: bold; margin: 0.5rem 0; color: var(--dark-gray); }
+        .quest-scenario { color: var(--medium-gray); margin-bottom: 2rem; }
+        .answer-options { display: flex; flex-direction: column; gap: 1rem; }
+        .answer-btn { background-color: var(--white); border: 2px solid #ddd; border-radius: 10px; padding: 1rem; font-size: 1rem; text-align: left; cursor: pointer; transition: all 0.2s; width: 100%; box-sizing: border-box; }
+        .answer-btn:hover:not(:disabled) { border-color: var(--verizon-red); color: var(--verizon-red); transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); }
+        .answer-btn:disabled { cursor: not-allowed; opacity: 0.8; }
+        .answer-btn.correct { background-color: var(--green-correct); border-color: var(--green-correct); color: var(--white); font-weight: bold; }
+        .answer-btn.incorrect { background-color: var(--red-incorrect); border-color: var(--red-incorrect); color: var(--white); font-weight: bold; }
+        #feedback-box { margin-top: 2rem; padding: 1rem; border-radius: 10px; font-weight: bold; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+        #feedback-box.correct { background-color: #e9f6eb; color: var(--green-correct); }
+        #feedback-box.incorrect { background-color: #fbebee; color: var(--red-incorrect); }
+        #feedback-text { margin: 0; }
+        #celebration-graphic { font-size: 2.5rem; color: gold; position: relative; animation: fade-in-out 1.5s ease-out; display: flex; justify-content: center; align-items: center; height: 50px; }
+        .star-icon { position: absolute; opacity: 0; animation: star-burst 1s forwards; }
+        .star-icon:nth-child(1) { transform: translate(-20px, -20px) rotate(15deg); animation-delay: 0.1s; }
+        .star-icon:nth-child(2) { transform: translate(20px, -10px) rotate(-20deg); animation-delay: 0.2s; }
+        .star-icon:nth-child(3) { transform: translate(-10px, 20px) rotate(30deg); animation-delay: 0.3s; }
+        @keyframes fade-in-out { 0% { opacity: 0; } 20% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; } }
+        @keyframes star-burst { 0% { transform: scale(0); opacity: 0; } 50% { transform: scale(1); opacity: 1; } 100% { transform: scale(0); opacity: 0; } }
+
+        /* --- Results Section --- */
+        .results-content { background-color: var(--white); padding: 3rem; border-radius: 15px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); max-width: 600px; }
+        .results-icon { font-size: 5rem; color: #ffc107; margin-bottom: 1rem; }
+        .results-title { font-size: 2.5rem; color: var(--dark-gray); margin-bottom: 1rem; }
+        #final-score { font-size: 1.5rem; font-weight: bold; color: var(--dark-gray); margin: -1rem 0 1.5rem 0; }
+        .results-summary li { list-style: '✅ '; margin-bottom: 0.8rem; padding-left: 0.5rem; }
+        #back-to-launchpad-btn { background-color: var(--dark-gray); margin-top: 1.5rem; }
+        
+        .cta-button { background-color: var(--verizon-red); color: var(--white); border: none; padding: 1rem 2rem; font-size: 1.2rem; font-weight: bold; border-radius: 50px; cursor: pointer; transition: transform 0.2s, background-color 0.2s; text-decoration: none; display: inline-block; }
+        .cta-button:hover { transform: scale(1.05); background-color: #A80000; }
+
+        /* --- Responsive Design --- */
+        @media (max-width: 768px) {
+            .launchpad-container { flex-direction: column; }
+            .quiz-choice-card { width: 100%; max-width: 300px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="launchpad-section" class="section">
+        <div>
+            <h1 style="font-size: 3rem; margin-bottom: 1rem;">Verizon Digital Quests</h1>
+            <p style="font-size: 1.25rem; color: #ccc; margin-bottom: 3rem;">Choose your adventure and master your digital world.</p>
+            <div class="launchpad-container">
+                <div class="quiz-choice-card" data-quiz-id="cloud">
+                    <div class="icon cloud"><i class="fas fa-cloud-upload-alt"></i></div>
+                    <h3>Verizon Cloud Quest</h3>
+                    <p>Learn how to protect, share, and manage your digital memories.</p>
+                </div>
+                <div class="quiz-choice-card" data-quiz-id="family">
+                    <div class="icon family"><i class="fas fa-users-cog"></i></div>
+                    <h3>Verizon Family Quest</h3>
+                    <p>Learn how to guide your family's digital habits with confidence.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="user-info-section" class="section hidden">
+        <form id="user-info-form" class="user-info-form">
+            <h2 id="user-info-title" style="margin-top: 0;">Get Ready for the Quest!</h2>
+            <p>Just a few details before you begin.</p>
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <button type="submit" class="cta-button">Start Quest</button>
+        </form>
+    </div>
+
+    <div id="quest-section" class="section hidden">
+        <div id="progress-bar"></div>
+        <div class="quest-card">
+            <div id="quest-icon" class="quest-icon"></div>
+            <h2 id="quest-title" class="quest-title"></h2>
+            <p id="quest-scenario" class="quest-scenario"></p>
+            <div id="answer-options" class="answer-options"></div>
+            <div id="feedback-box" class="hidden">
+                <div id="celebration-graphic" class="hidden">
+                    <i class="fas fa-star star-icon"></i>
+                    <i class="fas fa-star star-icon"></i>
+                    <i class="fas fa-star star-icon"></i>
+                </div>
+                <p id="feedback-text"></p>
+                <button id="next-quest-btn" class="cta-button">Next Quest →</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="results-section" class="section hidden">
+        <div class="results-content">
+            <div class="results-icon">🏆</div>
+            <h1 id="results-title" class="results-title">Quest Complete!</h1>
+            <p id="final-score"></p>
+            <p id="results-subtitle"></p>
+            <ul id="results-summary" class="results-summary" style="text-align: left; margin: 2rem 0; color: var(--medium-gray); padding-left: 1rem;"></ul>
+            <a id="results-cta-link" href="#" class="cta-button">Learn More</a>
+            <button id="back-to-launchpad-btn" class="cta-button">Take Another Quest</button>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- CONFIGURATION ---
+        // This is your unique Formspree URL.
+        const FORM_ENDPOINT = 'https://formspree.io/f/meorqbkp'; 
+
+        // --- DATA ---
+        const quizzes = {
+            cloud: {
+                name: "Verizon Cloud",
+                data: [
+                    { icon: '💦', title: 'Quest 1: The Vanishing Vacation', scenario: 'Your phone falls into a puddle! What feature would have protected your vacation memories?', options: ['Photo Album Charm', 'Automatic Backup Shield', 'Memory Search Spell'], correctAnswer: 1, feedback: 'The Automatic Backup Shield constantly saves your files, so your memories are safe no matter what.' },
+                    { icon: '📂', title: 'Quest 2: The Digital Declutter', scenario: 'Your phone storage is full. What’s the solution?', options: ['Buy a new phone', 'Delete important files', 'Free up space by moving files to the cloud'], correctAnswer: 2, feedback: 'Verizon Cloud lets you free up valuable storage space by safely moving photos and videos to the cloud.' },
+                    { icon: '👨‍👩‍👧‍👦', title: 'Quest 3: The Reunion Roundup', scenario: 'How do you easily share 200 family reunion photos with everyone?', options: ['Use the Content Sharing Portal', 'Send one photo at a time', 'Print them all out'], correctAnswer: 0, feedback: 'The Content Sharing Portal lets you sync and share entire albums across different devices easily.' },
+                    { icon: '🐶', title: 'Quest 4: The Puppy Picture Hunt', scenario: 'You need to find a specific photo of your dog. What’s the fastest way?', options: ['The Random Photo Shuffle', 'The "Tag & Search" Compass', 'The Chronological Scroll'], correctAnswer: 1, feedback: 'The "Tag & Search" Compass is Verizon Cloud\'s advanced search, letting you find photos by location, person, or even objects.' },
+                    { icon: '🛡️', title: 'Quest 5: The Fortress of Files', scenario: 'How does Verizon Cloud protect your important documents and private photos?', options: ['The built-in Security Fortress', 'A lucky charm', 'A simple password'], correctAnswer: 0, feedback: 'The Security Fortress represents Verizon Cloud\'s essential security features that keep your private information safe.' }
+                ],
+                results: {
+                    subtitle: "You're a Cloud Master! You now know how to protect, share, and manage your digital life.",
+                    summary: [
+                        '<strong>Automatically Protect</strong> your photos and videos.',
+                        '<strong>Easily Share</strong> memories with family and friends.',
+                        '<strong>Quickly Find</strong> any file with advanced search.',
+                        '<strong>Free up Space</strong> on your devices.'
+                    ],
+                    ctaUrl: 'https://www.verizon.com/solutions-and-services/add-ons/protection-and-security/verizon-cloud/'
+                }
+            },
+            family: {
+                name: "Verizon Family",
+                data: [
+                    { icon: '📍', title: 'Quest 1: The Location Lookout', scenario: 'Your teen is late coming home. What\'s the quickest way to check their location without repeatedly calling?', options: ['Use real-time location tracking', 'Wait by the window', 'Send 10 text messages'], correctAnswer: 0, feedback: 'With location tracking, you can see your family members\' whereabouts on a live map for peace of mind.' },
+                    { icon: '⏰', title: 'Quest 2: The Screen Time Stand-Down', scenario: 'It\'s a school night, and you want to ensure your child isn\'t up late on their phone. How can you manage this?', options: ['Hope for the best', 'Set screen time limits or a device curfew', 'Hide their phone charger'], correctAnswer: 1, feedback: 'You can easily pause the internet or set time limits to help your kids disconnect from their devices.' },
+                    { icon: '🚫', title: 'Quest 3: The Content Guard', scenario: 'How can you prevent your child from accessing websites and apps that aren\'t age-appropriate?', options: ['Apply content filters', 'Look over their shoulder 24/7', 'Turn off the internet completely'], correctAnswer: 0, feedback: 'Content filters let you block inappropriate apps and websites, customizing access for each child.' },
+                    { icon: '🚗', title: 'Quest 4: The Driver\'s Companion', scenario: 'Your new teenage driver is on their first solo drive. How can you get peace of mind about their safety?', options: ['Worry until they get home', 'Check the driving insights report', 'Follow them in your car'], correctAnswer: 1, feedback: 'The app provides insights into driving habits, including speed and phone usage, to help encourage safer driving.' },
+                    { icon: '📵', title: 'Quest 5: The Contact Control', scenario: 'You\'re concerned about your child receiving calls or texts from unknown numbers. What can you do?', options: ['Take their phone away', 'Block unwanted or unknown contacts', 'Change their number every week'], correctAnswer: 1, feedback: 'Verizon Family allows you to block unwanted contacts to ensure your child only communicates with trusted people.' }
+                ],
+                results: {
+                    subtitle: "You're a Family Guardian! You now know how to guide your family's digital experience safely.",
+                    summary: [
+                        '<strong>Track location</strong> for peace of mind.',
+                        '<strong>Manage screen time</strong> to build healthy habits.',
+                        '<strong>Filter content</strong> to keep browsing safe.',
+                        '<strong>Monitor driving</strong> to encourage safety on the road.'
+                    ],
+                    ctaUrl: 'https://www.verizon.com/solutions-and-services/add-ons/safety/verizon-family-parental-control-monitoring-app/'
+                }
+            }
+        };
+
+        // --- STATE VARIABLES ---
+        let currentQuestIndex = 0;
+        let activeQuizId = null;
+        let activeQuizData = [];
+        let userScore = 0;
+        let userName = '';
+        let userEmail = '';
+
+        // --- DOM ELEMENT REFERENCES ---
+        const sections = {
+            launchpad: document.getElementById('launchpad-section'),
+            userInfo: document.getElementById('user-info-section'),
+            quest: document.getElementById('quest-section'),
+            results: document.getElementById('results-section')
+        };
+        const userInfoForm = document.getElementById('user-info-form');
+        const userInfoTitle = document.getElementById('user-info-title');
+        const quizChoiceCards = document.querySelectorAll('.quiz-choice-card');
+        const progressBar = document.getElementById('progress-bar');
+        const questIcon = document.getElementById('quest-icon');
+        const questTitle = document.getElementById('quest-title');
+        const questScenario = document.getElementById('quest-scenario');
+        const answerOptions = document.getElementById('answer-options');
+        const feedbackBox = document.getElementById('feedback-box');
+        const feedbackText = document.getElementById('feedback-text');
+        const celebrationGraphic = document.getElementById('celebration-graphic');
+        const nextQuestBtn = document.getElementById('next-quest-btn');
+        const resultsTitle = document.getElementById('results-title');
+        const finalScoreDisplay = document.getElementById('final-score');
+        const resultsSubtitle = document.getElementById('results-subtitle');
+        const resultsSummary = document.getElementById('results-summary');
+        const resultsCtaLink = document.getElementById('results-cta-link');
+        const backToLaunchpadBtn = document.getElementById('back-to-launchpad-btn');
+        
+        // --- FUNCTIONS ---
+        function showSection(sectionName) {
+            Object.values(sections).forEach(section => section.classList.add('hidden'));
+            sections[sectionName].classList.remove('hidden');
+        }
+
+        function chooseQuiz(quizId) {
+            activeQuizId = quizId;
+            userInfoTitle.textContent = `Get Ready for the ${quizzes[activeQuizId].name} Quest!`;
+            showSection('userInfo');
+        }
+
+        function startQuest(event) {
+            event.preventDefault();
+            userName = document.getElementById('name').value;
+            userEmail = document.getElementById('email').value;
+            userScore = 0; // Reset score for new quiz
+            activeQuizData = quizzes[activeQuizId].data;
+            currentQuestIndex = 0;
+            showSection('quest');
+            displayQuest();
+        }
+
+        function displayQuest() {
+            feedbackBox.classList.add('hidden');
+            answerOptions.innerHTML = '';
+            const quest = activeQuizData[currentQuestIndex];
+            progressBar.textContent = `Quest ${currentQuestIndex + 1} of ${activeQuizData.length}`;
+            questIcon.textContent = quest.icon;
+            questTitle.textContent = quest.title;
+            questScenario.textContent = quest.scenario;
+            quest.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.classList.add('answer-btn');
+                button.addEventListener('click', () => selectAnswer(index, button));
+                answerOptions.appendChild(button);
+            });
+        }
+
+        function selectAnswer(selectedIndex, button) {
+            const quest = activeQuizData[currentQuestIndex];
+            const isCorrect = (selectedIndex === quest.correctAnswer);
+            Array.from(answerOptions.children).forEach(btn => { btn.disabled = true; });
+            
+            feedbackBox.classList.remove('hidden', 'correct', 'incorrect');
+            celebrationGraphic.classList.toggle('hidden', !isCorrect);
+            
+            if (isCorrect) {
+                userScore++; // Increment score
+                button.classList.add('correct');
+                feedbackBox.classList.add('correct');
+                feedbackText.innerHTML = `<strong>Correct!</strong> ${quest.feedback}`;
+            } else {
+                button.classList.add('incorrect');
+                feedbackBox.classList.add('incorrect');
+                feedbackText.innerHTML = `<strong>Not quite.</strong> ${quest.feedback}`;
+                answerOptions.children[quest.correctAnswer].classList.add('correct');
+            }
+        }
+
+        function showNextQuest() {
+            currentQuestIndex++;
+            if (currentQuestIndex < activeQuizData.length) {
+                displayQuest();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            const resultsData = quizzes[activeQuizId].results;
+            const totalQuestions = activeQuizData.length;
+            
+            resultsTitle.textContent = `${quizzes[activeQuizId].name} Quest Complete!`;
+            finalScoreDisplay.textContent = `Your Score: ${userScore} out of ${totalQuestions}`;
+            resultsSubtitle.textContent = resultsData.subtitle;
+            resultsSummary.innerHTML = resultsData.summary.map(item => `<li>${item}</li>`).join('');
+            resultsCtaLink.href = resultsData.ctaUrl;
+            
+            submitResults(); // Automatically send the data
+            showSection('results');
+        }
+        
+        function submitResults() {
+            if (!FORM_ENDPOINT || FORM_ENDPOINT === 'YOUR_FORMSPREE_URL_HERE') {
+                console.warn('Formspree URL not set. Results will not be submitted.');
+                return;
+            }
+            
+            const submissionData = {
+                name: userName,
+                email: userEmail,
+                quizCompleted: `${quizzes[activeQuizId].name} Quest`,
+                score: `${userScore} / ${activeQuizData.length}`,
+                completionDate: new Date().toLocaleString()
+            };
+
+            fetch(FORM_ENDPOINT, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(submissionData)
+            })
+            .then(response => {
+                if(response.ok) {
+                    console.log('Quiz results submitted successfully!');
+                } else {
+                    console.error('Failed to submit quiz results.');
+                }
+            })
+            .catch(error => console.error('Error submitting quiz results:', error));
+        }
+
+        // --- EVENT LISTENERS ---
+        quizChoiceCards.forEach(card => {
+            card.addEventListener('click', () => chooseQuiz(card.dataset.quizId));
+        });
+        userInfoForm.addEventListener('submit', startQuest);
+        nextQuestBtn.addEventListener('click', showNextQuest);
+        backToLaunchpadBtn.addEventListener('click', () => showSection('launchpad'));
+
+        // --- INITIAL STATE ---
+        showSection('launchpad');
+    });
+    </script>
+</body>
+</html>
